@@ -1,4 +1,4 @@
-export interface WeatherData {
+interface WeatherData {
   name: string;                    // 'Kyiv'
   sys: {
     country: string;              // 'UA'
@@ -26,3 +26,42 @@ export interface WeatherData {
   visibility: number;             // 10000
   dt: number;                     // Unix timestamp
 }
+
+interface ForecastData {
+  list: Array<{
+    dt: number;
+    dt_txt: string;               // '2024-01-15 12:00:00'
+    main: {
+      temp: number;
+      feels_like: number;
+      humidity: number;
+      temp_min: number;
+      temp_max: number;
+    };
+    weather: Array<{
+      id: number;
+      main: string;
+      description: string;
+      icon: string;
+    }>;
+    wind: {
+      speed: number;
+    };
+  }>;
+  city: {
+    name: string;
+    country: string;
+  };
+}
+
+interface DailyForecast {
+  date: string;
+  dayName: string;
+  temp: number;
+  tempMin: number;
+  tempMax: number;
+  icon: string;
+  description: string;
+}
+
+export type { WeatherData, ForecastData, DailyForecast };
