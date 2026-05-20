@@ -1,10 +1,8 @@
-import { Button } from './components/ui/button'
+import WeatherApp from './components/weather-app'
 
 function App() {
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center">
-      <Button>Click me</Button>
-    </div>
+    <WeatherApp />
   )
 }
 export default App
