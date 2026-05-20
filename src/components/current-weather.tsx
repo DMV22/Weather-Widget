@@ -33,7 +33,13 @@ export default function CurrentWeather({
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-2">
+        <img
+          src={`https://openweathermap.org/img/wn/${data.weather[0].icon}.png`}
+          alt={data.weather[0].description}
+          className="w-16 h-16"
+        />
+
         <p className="text-4xl font-semibold tracking-tight">
           {Math.round(data.main.temp)}°C
         </p>
