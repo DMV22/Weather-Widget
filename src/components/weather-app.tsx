@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { useWeather } from "@/hooks/use-weather";
 import { useForecast } from "@/hooks/use-forecast";
 import { useGeolocation } from "@/hooks/use-geolocation";
+import { useTemperatureUnit } from "@/hooks/use-temperature-unit";
 
 import SearchBar from "@/components/search-bar";
 import CurrentWeather from "@/components/current-weather";
 import ForecastList from "@/components/forecast-list";
 import LoadingSkeleton from "@/components/loading-skeleton";
 import ErrorMessage from "@/components/error-message";
+import UnitToggle from "@/components/unit-toggle";
 
 import { type WeatherParams } from "@/lib/api/weather-api";
 
@@ -17,6 +19,7 @@ export default function WeatherApp() {
   const [queryParams, setQueryParams] = useState<WeatherParams>({ city: DEFAULT_CITY });
   const [inputValue, setInputValue] = useState(DEFAULT_CITY);
 
+  const { unit, setTemperatureUnit } = useTemperatureUnit();
   const { coordinates, error: geoError, isLoading: isGeoLoading, getCurrentPosition } = useGeolocation();
 
   const currentData = useWeather(queryParams);
@@ -54,6 +57,7 @@ export default function WeatherApp() {
           onSubmit={handleSearch}
           isLoading={currentData.isLoading || isGeoLoading}
         />
+        <UnitToggle unit={unit} onChange={setTemperatureUnit} />
 
         {geoError && (
           <p className="text-sm text-muted-foreground">
@@ -69,12 +73,12 @@ export default function WeatherApp() {
           />
         )}
         {currentData.data && !currentData.isError && (
-          <CurrentWeather data={currentData.data} isFetching={currentData.isFetching} />
+          <CurrentWeather data={currentData.data} isFetching={currentData.isFetching} unit={unit} />
         )}
       </div>
 
       <div>
-        {forecastData.data && <ForecastList data={forecastData.data} isFetching={forecastData.isFetching} />}
+        {forecastData.data && <ForecastList data={forecastData.data} isFetching={forecastData.isFetching} unit={unit} />}
       </div>
     </>
   );
