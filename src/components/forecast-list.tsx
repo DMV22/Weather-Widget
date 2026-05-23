@@ -1,15 +1,18 @@
 import ForecastCard from "./forecast-card";
-import type { ForecastData } from "@/lib/api/types";
+import { type ForecastData } from "@/lib/api/types";
 import { transformForecastToDaily } from "@/lib/forecast";
+import { type TemperatureUnit } from "@/hooks/use-temperature-unit";
 
 export interface ForecastListProps {
   data: ForecastData;
   isFetching?: boolean;
+  unit: TemperatureUnit;
 }
 
 export default function ForecastList({
   data,
   isFetching = false,
+  unit
 }: ForecastListProps) {
   const dailyForecast = transformForecastToDaily(data);
 
@@ -30,6 +33,7 @@ export default function ForecastList({
             key={forecast.date}
             forecast={forecast}
             isFetching={isFetching}
+            unit={unit}
           />
         ))}
       </div>

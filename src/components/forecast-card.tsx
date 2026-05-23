@@ -2,16 +2,20 @@ import {
   Card,
   CardContent,
 } from "@/components/ui/card";
-import type { DailyForecast } from "@/lib/api/types";
+import { type DailyForecast } from "@/lib/api/types";
+import { type TemperatureUnit } from "@/hooks/use-temperature-unit";
+import { Temperature } from "@/lib/temperature";
 
 interface ForecastCardProps {
   forecast: DailyForecast;
   isFetching?: boolean;
+  unit: TemperatureUnit;
 }
 
 export default function ForecastCard({
   forecast,
   isFetching = false,
+  unit
 }: ForecastCardProps) {
 
   return (
@@ -49,10 +53,10 @@ export default function ForecastCard({
         </p>
         <div className="flex items-center gap-3 pt-1">
           <span className="text-lg font-bold">
-            {Math.round(forecast.tempMax)}°
+            {Temperature(forecast.tempMax, unit)}°
           </span>
           <span className="text-sm text-muted-foreground">
-            {Math.round(forecast.tempMin)}°
+            {Temperature(forecast.tempMin, unit)}°
           </span>
         </div>
       </CardContent>

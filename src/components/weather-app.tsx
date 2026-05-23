@@ -1,18 +1,43 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useWeather } from "@/hooks/use-weather";
 import { useForecast } from "@/hooks/use-forecast";
+import { useGeolocation } from "@/hooks/use-geolocation";
+import { useTemperatureUnit } from "@/hooks/use-temperature-unit";
+
 import SearchBar from "@/components/search-bar";
 import CurrentWeather from "@/components/current-weather";
-import ForecastList from "./forecast-list";
+import ForecastList from "@/components/forecast-list";
 import LoadingSkeleton from "@/components/loading-skeleton";
 import ErrorMessage from "@/components/error-message";
+import UnitToggle from "@/components/unit-toggle";
+
+import { type WeatherParams } from "@/lib/api/weather-api";
+
+const DEFAULT_CITY = "Kyiv";
 
 export default function WeatherApp() {
-  const [searchCity, setSearchCity] = useState("Kyiv");
-  const [inputValue, setInputValue] = useState("Kyiv");
+  const [queryParams, setQueryParams] = useState<WeatherParams>({ city: DEFAULT_CITY });
+  const [inputValue, setInputValue] = useState(DEFAULT_CITY);
 
-  const currentData = useWeather(searchCity);
-  const forecastData = useForecast(searchCity);
+  const { unit, setTemperatureUnit } = useTemperatureUnit();
+  const { coordinates, error: geoError, isLoading: isGeoLoading, getCurrentPosition } = useGeolocation();
+
+  const currentData = useWeather(queryParams);
+  const forecastData = useForecast(queryParams);
+
+  useEffect(() => {
+    getCurrentPosition();
+  }, [getCurrentPosition]);
+
+  useEffect(() => {
+    if (coordinates) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setQueryParams({
+        lat: coordinates.lat,
+        lon: coordinates.lon,
+      });
+    }
+  }, [coordinates]);
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -20,7 +45,7 @@ export default function WeatherApp() {
     const normalizedCity = inputValue.trim();
     if (!normalizedCity) return;
 
-    setSearchCity(normalizedCity);
+    setQueryParams({ city: normalizedCity });
   };
 
   return (
@@ -30,8 +55,16 @@ export default function WeatherApp() {
           value={inputValue}
           onChange={setInputValue}
           onSubmit={handleSearch}
-          isLoading={currentData.isLoading}
+          isLoading={currentData.isLoading || isGeoLoading}
         />
+        <UnitToggle unit={unit} onChange={setTemperatureUnit} />
+
+        {geoError && (
+          <p className="text-sm text-muted-foreground">
+            {geoError}. Подивіться погоду для {DEFAULT_CITY} або введіть інше місто вручну.
+          </p>
+        )}
+
         {currentData.isLoading && <LoadingSkeleton />}
         {currentData.isError && (
           <ErrorMessage
@@ -40,12 +73,12 @@ export default function WeatherApp() {
           />
         )}
         {currentData.data && !currentData.isError && (
-          <CurrentWeather data={currentData.data} isFetching={currentData.isFetching} />
+          <CurrentWeather data={currentData.data} isFetching={currentData.isFetching} unit={unit} />
         )}
       </div>
 
       <div>
-        {forecastData.data && <ForecastList data={forecastData.data} isFetching={forecastData.isFetching} />}
+        {forecastData.data && <ForecastList data={forecastData.data} isFetching={forecastData.isFetching} unit={unit} />}
       </div>
     </>
   );

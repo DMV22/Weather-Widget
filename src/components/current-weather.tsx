@@ -6,15 +6,19 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import type { WeatherData } from "@/lib/api/types";
+import type { TemperatureUnit } from "@/hooks/use-temperature-unit";
+import { Temperature } from "@/lib/temperature";
 
 interface CurrentWeatherProps {
   data: WeatherData;
   isFetching?: boolean;
+  unit: TemperatureUnit;
 }
 
 export default function CurrentWeather({
   data,
   isFetching = false,
+  unit
 }: CurrentWeatherProps) {
   return (
     <Card className="relative">
@@ -41,13 +45,13 @@ export default function CurrentWeather({
         />
 
         <p className="text-4xl font-semibold tracking-tight">
-          {Math.round(data.main.temp)}°C
+          {Temperature(data.main.temp, unit)}°{unit === "celsius" ? "C" : "F"}
         </p>
 
         <div className="space-y-1 text-sm text-muted-foreground">
           <p>Вологість: {data.main.humidity}%</p>
           <p>Вітер: {data.wind.speed} м/с</p>
-          <p>Відчувається як: {Math.round(data.main.feels_like)}°C</p>
+          <p>Відчувається як: {Temperature(data.main.feels_like, unit)}°{unit === "celsius" ? "C" : "F"}</p>
         </div>
       </CardContent>
     </Card>
