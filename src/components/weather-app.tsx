@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useWeather } from "@/hooks/use-weather";
 import { useForecast } from "@/hooks/use-forecast";
 import { useGeolocation } from "@/hooks/use-geolocation";
@@ -10,6 +10,7 @@ import ForecastList from "@/components/forecast-list";
 import LoadingSkeleton from "@/components/loading-skeleton";
 import ErrorMessage from "@/components/error-message";
 import UnitToggle from "@/components/unit-toggle";
+import WeatherCopyButton from "@/components/weather-copy-button";
 
 import { type WeatherParams } from "@/lib/api/weather-api";
 import { cn } from "@/lib/utils";
@@ -40,7 +41,7 @@ export default function WeatherApp() {
     }
   }, [coordinates]);
 
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSearch = (e: FormEvent) => {
     e.preventDefault();
 
     const normalizedCity = inputValue.trim();
@@ -62,7 +63,7 @@ export default function WeatherApp() {
         "transition-colors duration-500",
         isNight
           ? "bg-[linear-gradient(135deg,var(--bg-night-from),var(--bg-night-to))]"
-          : "bg-[linear-gradient(135deg,var(--bg-day-from),var(--bg-day-to))]",
+          : "bg-[linear-gradient(135deg,var(--bg-day-from),var(--bg-day-to))]"
       )}
     >
       <section
@@ -109,11 +110,17 @@ export default function WeatherApp() {
           )}
 
           {currentData.data && !currentData.isError && (
-            <CurrentWeather
-              data={currentData.data}
-              isFetching={currentData.isFetching}
-              unit={unit}
-            />
+            <>
+              <CurrentWeather
+                data={currentData.data}
+                isFetching={currentData.isFetching}
+                unit={unit}
+              />
+              <WeatherCopyButton
+                weatherData={currentData.data}
+                unit={unit}
+              />
+            </>
           )}
 
           {forecastData.data && (
