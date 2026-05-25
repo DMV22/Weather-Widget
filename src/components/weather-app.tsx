@@ -10,6 +10,7 @@ import ForecastList from "@/components/forecast-list";
 import LoadingSkeleton from "@/components/loading-skeleton";
 import ErrorMessage from "@/components/error-message";
 import UnitToggle from "@/components/unit-toggle";
+import ForecastDaily from "@/components/forecast-daily";
 import WeatherCopyButton from "@/components/weather-copy-button";
 
 import { type WeatherParams } from "@/lib/api/weather-api";
@@ -124,11 +125,19 @@ export default function WeatherApp() {
           )}
 
           {forecastData.data && (
-            <ForecastList
-              data={forecastData.data}
-              isFetching={forecastData.isFetching}
-              unit={unit}
-            />
+            <>
+              <ForecastList
+                data={forecastData.data}
+                isFetching={forecastData.isFetching}
+                unit={unit}
+              />
+
+              <ForecastDaily
+                data={forecastData.data}
+                isFetching={forecastData.isFetching}
+                unit={unit}
+              />
+            </>
           )}
         </div>
       </section>
