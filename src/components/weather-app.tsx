@@ -4,6 +4,7 @@ import { useForecast } from "@/hooks/use-forecast";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import { useTemperatureUnit } from "@/hooks/use-temperature-unit";
 import { useFavoriteCity } from "@/hooks/use-favorite-city";
+import { useCityAutocomplete } from "@/hooks/use-city-autocomplete";
 
 import SearchBar from "@/components/search-bar";
 import CurrentWeather from "@/components/current-weather";
@@ -17,7 +18,9 @@ import FavoriteList from "@/components/favorite-list";
 import WeatherCopyButton from "@/components/weather-copy-button";
 
 import { type WeatherParams } from "@/lib/api/weather-api";
+import type { GeocodingCity } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
+import { formatCityLabel } from "@/lib/format-city";
 
 const DEFAULT_CITY = "Kyiv";
 
@@ -28,6 +31,7 @@ export default function WeatherApp() {
   const { unit, setTemperatureUnit } = useTemperatureUnit();
   const { coordinates, error: geoError, isLoading: isGeoLoading, getCurrentPosition } = useGeolocation();
   const { favorites, toggleFavorite, isFavorite } = useFavoriteCity();
+  const { suggestions, isLoading: isSuggestionsLoading, isFetching: isSuggestionsFetching } = useCityAutocomplete(inputValue)
 
   const currentData = useWeather(queryParams);
   const forecastData = useForecast(queryParams);
@@ -46,13 +50,27 @@ export default function WeatherApp() {
     }
   }, [coordinates]);
 
-  const handleSearch = (e: FormEvent) => {
-    e.preventDefault();
-
+  const submitSearch = () => {
     const normalizedCity = inputValue.trim();
+
     if (!normalizedCity) return;
 
     setQueryParams({ city: normalizedCity });
+  };
+
+  const handleSearch = (e: FormEvent) => {
+    e.preventDefault();
+    submitSearch();
+  };
+
+  const handleSuggestionSelect = (city: GeocodingCity) => {
+    const label = formatCityLabel(city);
+
+    setInputValue(label);
+    setQueryParams({
+      lat: city.lat,
+      lon: city.lon,
+    });
   };
 
   const handleSelectFavoriteCity = (city: { name: string }) => {
@@ -100,7 +118,10 @@ export default function WeatherApp() {
           value={inputValue}
           onChange={setInputValue}
           onSubmit={handleSearch}
+          onSuggestionSelect={handleSuggestionSelect}
+          suggestions={suggestions}
           isLoading={currentData.isLoading || isGeoLoading}
+          isSuggestionsLoading={isSuggestionsLoading || isSuggestionsFetching}
         />
 
         {geoError && (
@@ -124,7 +145,7 @@ export default function WeatherApp() {
           {currentData.isError && (
             <ErrorMessage
               message={currentData.error.message || "Не вдалося завантажити дані"}
-              onRetry={() => currentData.refetch()}
+              onRetry={submitSearch}
             />
           )}
 
