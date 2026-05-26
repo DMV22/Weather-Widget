@@ -3,6 +3,7 @@ import { useWeather } from "@/hooks/use-weather";
 import { useForecast } from "@/hooks/use-forecast";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import { useTemperatureUnit } from "@/hooks/use-temperature-unit";
+import { useFavoriteCity } from "@/hooks/use-favorite-city";
 
 import SearchBar from "@/components/search-bar";
 import CurrentWeather from "@/components/current-weather";
@@ -11,6 +12,8 @@ import LoadingSkeleton from "@/components/loading-skeleton";
 import ErrorMessage from "@/components/error-message";
 import UnitToggle from "@/components/unit-toggle";
 import ForecastDaily from "@/components/forecast-daily";
+import FavoriteButton from "@/components/favorite-button";
+import FavoriteList from "@/components/favorite-list";
 import WeatherCopyButton from "@/components/weather-copy-button";
 
 import { type WeatherParams } from "@/lib/api/weather-api";
@@ -24,6 +27,7 @@ export default function WeatherApp() {
 
   const { unit, setTemperatureUnit } = useTemperatureUnit();
   const { coordinates, error: geoError, isLoading: isGeoLoading, getCurrentPosition } = useGeolocation();
+  const { favorites, toggleFavorite, isFavorite } = useFavoriteCity();
 
   const currentData = useWeather(queryParams);
   const forecastData = useForecast(queryParams);
@@ -49,6 +53,11 @@ export default function WeatherApp() {
     if (!normalizedCity) return;
 
     setQueryParams({ city: normalizedCity });
+  };
+
+  const handleSelectFavoriteCity = (city: { name: string }) => {
+    setInputValue(city.name);
+    setQueryParams({ city: city.name });
   };
 
   const isNight = useMemo(() => {
@@ -101,6 +110,15 @@ export default function WeatherApp() {
         )}
 
         <div className="mt-5 space-y-5">
+          {currentData.data && !currentData.isError && (
+            <FavoriteList
+              favorites={favorites}
+              currentCityId={currentData.data.id}
+              onSelectCity={handleSelectFavoriteCity}
+              onRemoveCity={toggleFavorite}
+            />
+          )}
+
           {currentData.isLoading && <LoadingSkeleton />}
 
           {currentData.isError && (
@@ -117,10 +135,23 @@ export default function WeatherApp() {
                 isFetching={currentData.isFetching}
                 unit={unit}
               />
-              <WeatherCopyButton
-                weatherData={currentData.data}
-                unit={unit}
-              />
+
+              <div className="flex flex-wrap items-center gap-3">
+                <FavoriteButton
+                  currentCity={{
+                    id: currentData.data.id,
+                    name: currentData.data.name,
+                    country: currentData.data.sys.country,
+                  }}
+                  isFavorite={isFavorite(currentData.data.id)}
+                  onToggle={toggleFavorite}
+                />
+
+                <WeatherCopyButton
+                  weatherData={currentData.data}
+                  unit={unit}
+                />
+              </div>
             </>
           )}
 
