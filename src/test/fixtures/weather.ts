@@ -19,8 +19,8 @@ export const mockCurrentWeather: WeatherData = {
   weather: [
     {
       id: 800,
-      main: "Clear",
-      description: "clear sky",
+      main: "Ясно",
+      description: "чисте небо",
       icon: "01d",
     },
   ],

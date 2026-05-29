@@ -1,26 +1,28 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { render, type RenderOptions } from "@testing-library/react";
-import type { ReactElement, PropsWithChildren } from "react";
+import type { PropsWithChildren, ReactElement } from "react";
 import { createTestQueryClient } from "@/test/test-query-client";
 
-
-// eslint-disable-next-line react-refresh/only-export-components
-function Providers({ children }: PropsWithChildren) {
+export function createTestWrapper() {
   const queryClient = createTestQueryClient();
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  );
+  return function TestWrapper({ children }: PropsWithChildren) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        {children}
+      </QueryClientProvider>
+    );
+  };
 }
 
 export function renderWithProviders(
   ui: ReactElement,
   options?: Omit<RenderOptions, "wrapper">
 ) {
+  const wrapper = createTestWrapper();
+
   return render(ui, {
-    wrapper: Providers,
+    wrapper,
     ...options,
   });
 }
