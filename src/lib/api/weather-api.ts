@@ -1,5 +1,5 @@
-import { type ForecastData, type WeatherData } from './types';
-import { weatherApi } from './axios-instance';
+import type { ForecastData, GeocodingCity, WeatherData } from '@/lib/api/types';
+import { weatherApi, geoApi } from "@/lib/api/axios-instance";
 
 export type WeatherParams = { city: string } | { lat: number; lon: number };
 
@@ -28,3 +28,19 @@ export const getForecast = async (params: WeatherParams, signal: AbortSignal): P
 
   return response.data;
 };
+
+export const getCitySuggestions = async (query: string, signal: AbortSignal): Promise<GeocodingCity[]> => {
+  const normalizedQuery = query.trim();
+
+  if (normalizedQuery.length < 2) return [];
+
+  const response = await geoApi.get('/geo/1.0/direct', {
+    params: {
+      q: normalizedQuery,
+      limit: 5,
+    },
+    signal
+  })
+
+  return response.data;
+}
