@@ -65,4 +65,13 @@ interface DailyForecast {
   description: string;
 }
 
-export type { WeatherData, ForecastData, DailyForecast };
+interface GeocodingCity {
+  name: string;
+  local_names?: Record<string, string>;
+  lat: number;
+  lon: number;
+  country: string;
+  state?: string;
+}
+
+export type { WeatherData, ForecastData, DailyForecast, GeocodingCity };
