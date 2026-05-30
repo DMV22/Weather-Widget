@@ -1,4 +1,5 @@
 interface WeatherData {
+  id: number;                      // 703448
   name: string;                    // 'Kyiv'
   sys: {
     country: string;              // 'UA'

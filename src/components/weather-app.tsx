@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useWeather } from "@/hooks/use-weather";
 import { useForecast } from "@/hooks/use-forecast";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import { useTemperatureUnit } from "@/hooks/use-temperature-unit";
+import { useFavoriteCity } from "@/hooks/use-favorite-city";
 
 import SearchBar from "@/components/search-bar";
 import CurrentWeather from "@/components/current-weather";
@@ -10,6 +11,10 @@ import ForecastList from "@/components/forecast-list";
 import LoadingSkeleton from "@/components/loading-skeleton";
 import ErrorMessage from "@/components/error-message";
 import UnitToggle from "@/components/unit-toggle";
+import ForecastDaily from "@/components/forecast-daily";
+import FavoriteButton from "@/components/favorite-button";
+import FavoriteList from "@/components/favorite-list";
+import WeatherCopyButton from "@/components/weather-copy-button";
 
 import { type WeatherParams } from "@/lib/api/weather-api";
 import { cn } from "@/lib/utils";
@@ -22,6 +27,7 @@ export default function WeatherApp() {
 
   const { unit, setTemperatureUnit } = useTemperatureUnit();
   const { coordinates, error: geoError, isLoading: isGeoLoading, getCurrentPosition } = useGeolocation();
+  const { favorites, toggleFavorite, isFavorite } = useFavoriteCity();
 
   const currentData = useWeather(queryParams);
   const forecastData = useForecast(queryParams);
@@ -40,13 +46,18 @@ export default function WeatherApp() {
     }
   }, [coordinates]);
 
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSearch = (e: FormEvent) => {
     e.preventDefault();
 
     const normalizedCity = inputValue.trim();
     if (!normalizedCity) return;
 
     setQueryParams({ city: normalizedCity });
+  };
+
+  const handleSelectFavoriteCity = (city: { name: string }) => {
+    setInputValue(city.name);
+    setQueryParams({ city: city.name });
   };
 
   const isNight = useMemo(() => {
@@ -62,7 +73,7 @@ export default function WeatherApp() {
         "transition-colors duration-500",
         isNight
           ? "bg-[linear-gradient(135deg,var(--bg-night-from),var(--bg-night-to))]"
-          : "bg-[linear-gradient(135deg,var(--bg-day-from),var(--bg-day-to))]",
+          : "bg-[linear-gradient(135deg,var(--bg-day-from),var(--bg-day-to))]"
       )}
     >
       <section
@@ -99,6 +110,15 @@ export default function WeatherApp() {
         )}
 
         <div className="mt-5 space-y-5">
+          {currentData.data && !currentData.isError && (
+            <FavoriteList
+              favorites={favorites}
+              currentCityId={currentData.data.id}
+              onSelectCity={handleSelectFavoriteCity}
+              onRemoveCity={toggleFavorite}
+            />
+          )}
+
           {currentData.isLoading && <LoadingSkeleton />}
 
           {currentData.isError && (
@@ -109,19 +129,46 @@ export default function WeatherApp() {
           )}
 
           {currentData.data && !currentData.isError && (
-            <CurrentWeather
-              data={currentData.data}
-              isFetching={currentData.isFetching}
-              unit={unit}
-            />
+            <>
+              <CurrentWeather
+                data={currentData.data}
+                isFetching={currentData.isFetching}
+                unit={unit}
+              />
+
+              <div className="flex flex-wrap items-center gap-3">
+                <FavoriteButton
+                  currentCity={{
+                    id: currentData.data.id,
+                    name: currentData.data.name,
+                    country: currentData.data.sys.country,
+                  }}
+                  isFavorite={isFavorite(currentData.data.id)}
+                  onToggle={toggleFavorite}
+                />
+
+                <WeatherCopyButton
+                  weatherData={currentData.data}
+                  unit={unit}
+                />
+              </div>
+            </>
           )}
 
           {forecastData.data && (
-            <ForecastList
-              data={forecastData.data}
-              isFetching={forecastData.isFetching}
-              unit={unit}
-            />
+            <>
+              <ForecastList
+                data={forecastData.data}
+                isFetching={forecastData.isFetching}
+                unit={unit}
+              />
+
+              <ForecastDaily
+                data={forecastData.data}
+                isFetching={forecastData.isFetching}
+                unit={unit}
+              />
+            </>
           )}
         </div>
       </section>
